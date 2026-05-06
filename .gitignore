@@ -3,6 +3,7 @@ backups/
 files/
 files.zip
 .claude/
+HANDOFF.md
 *.tmp
 .DS_Store
 Thumbs.db
