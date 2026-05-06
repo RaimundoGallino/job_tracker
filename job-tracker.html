@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -200,7 +200,7 @@ function badgeClass(s){return 'badge b-'+(s||'').toLowerCase();}
 // Simple donut drawn with SVG
 function Donut({data,size=130}){
   const total=data.reduce((a,d)=>a+d.v,0);
-  if(!total)return React.createElement('div',{style:{width:size,height:size,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text2)',fontSize:12}},'Sin datos');
+  if(!total)return React.createElement('div',{style:{width:size,height:size,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text2)',fontSize:12}},'No data');
   let offset=0;
   const r=48,cx=65,cy=65,circ=2*Math.PI*r;
   const slices=data.map(d=>{
@@ -228,10 +228,10 @@ function Donut({data,size=130}){
 function EmptyState({onAdd}){
   return React.createElement('div',{className:'empty'},
     React.createElement('div',{className:'empty-icon'},'📋'),
-    React.createElement('p',null,'No hay postulaciones todavía'),
-    React.createElement('small',null,'Agregá tu primera oportunidad para empezar a trackear'),
+    React.createElement('p',null,'No applications yet'),
+    React.createElement('small',null,'Add your first opportunity to start tracking'),
     React.createElement('br'),
-    React.createElement('button',{className:'btn btn-primary',style:{marginTop:14},onClick:onAdd},'+ Agregar trabajo')
+    React.createElement('button',{className:'btn btn-primary',style:{marginTop:14},onClick:onAdd},'+ Add job')
   );
 }
 
@@ -253,7 +253,7 @@ function App(){
   const [sortBy,setSortBy]=useState('date');
   const [form,setForm]=useState({});
 
-  const persist=useCallback(updated=>{setJobs(updated);pushJobs(updated).catch(e=>setError('No se pudo guardar: '+e.message));},[]);
+  const persist=useCallback(updated=>{setJobs(updated);pushJobs(updated).catch(e=>setError('Could not save: '+e.message));},[]);
 
   const openAdd=()=>{
     setForm({company:'',role:'',status:'Planned',date:new Date().toISOString().split('T')[0],interviewDate:'',contact:'',nextAction:'',notes:'',location:'',url:'',priority:'medium'});
@@ -267,7 +267,7 @@ function App(){
   const setF=(k,v)=>setForm(p=>({...p,[k]:v}));
 
   const submit=()=>{
-    if(!form.company.trim()||!form.role.trim())return alert('Empresa y rol son obligatorios');
+    if(!form.company.trim()||!form.role.trim())return alert('Company and role are required');
     let updated;
     if(editingId){
       updated=jobs.map(j=>j.id===editingId?{...form,id:editingId}:j);
@@ -281,7 +281,7 @@ function App(){
   };
 
   const deleteJob=id=>{
-    if(!confirm('¿Eliminar esta postulación?'))return;
+    if(!confirm('Delete this application?'))return;
     persist(jobs.filter(j=>j.id!==id));
     if(detailJob&&detailJob.id===id)setDetailJob(null);
   };
@@ -327,7 +327,7 @@ function App(){
 
   // Export CSV
   const exportCSV=()=>{
-    const headers=['Empresa','Rol','Estado','Fecha','Fecha Entrevista','Contacto','Próx. acción','Ubicación','Notas','URL'];
+    const headers=['Company','Role','Status','Date','Interview date','Contact','Next action','Location','Notes','URL'];
     const rows=jobs.map(j=>[j.company,j.role,j.status,j.date,j.interviewDate,j.contact,j.nextAction,j.location,j.notes,j.url].map(v=>`"${(v||'').replace(/"/g,'""')}"`));
     const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
     const a=document.createElement('a');
@@ -340,10 +340,10 @@ function App(){
   const Dashboard=()=>React.createElement('div',null,
     React.createElement('div',{className:'stats-grid'},
       [
-        {cls:'s1',icon:'💼',label:'Postuladas',val:applied,sub:`${planned} planeadas`},
-        {cls:'s2',icon:'🎯',label:'Entrevistas',val:interviews,sub:applied?`${Math.round(interviews/applied*100)}% del total`:'—'},
-        {cls:'s3',icon:'🏆',label:'Ofertas',val:offers,sub:applied?`${convRate}% conversión`:'—'},
-        {cls:'s4',icon:'📈',label:'Tasa respuesta',val:responseRate+'%',sub:responseRate>=50?'¡Muy bien!':'Seguí aplicando'},
+        {cls:'s1',icon:'💼',label:'Applied',val:applied,sub:`${planned} planned`},
+        {cls:'s2',icon:'🎯',label:'Interviews',val:interviews,sub:applied?`${Math.round(interviews/applied*100)}% of total`:'—'},
+        {cls:'s3',icon:'🏆',label:'Offers',val:offers,sub:applied?`${convRate}% conversion`:'—'},
+        {cls:'s4',icon:'📈',label:'Response rate',val:responseRate+'%',sub:responseRate>=50?'Looking good!':'Keep applying'},
       ].map(({cls,icon,label,val,sub})=>
         React.createElement('div',{key:cls,className:`stat-card ${cls}`},
           React.createElement('div',{className:'stat-icon'},icon),
@@ -365,13 +365,13 @@ function App(){
           React.createElement('span',{className:'pipeline-pct'},total?`${Math.round(statusCounts[s]/total*100)}%`:'—')
         )),
         React.createElement('div',{className:'conversion'},
-          React.createElement('span',null,'Conversión (Applied → Offer)'),
+          React.createElement('span',null,'Conversion (Applied → Offer)'),
           React.createElement('b',null,convRate+'%')
         )
       ),
       React.createElement('div',{className:'card'},
-        React.createElement('div',{className:'card-title'},'Distribución'),
-        jobs.length===0?React.createElement('div',{style:{color:'var(--text2)',fontSize:13,padding:'20px 0',textAlign:'center'}},'Sin datos aún'):
+        React.createElement('div',{className:'card-title'},'Distribution'),
+        jobs.length===0?React.createElement('div',{style:{color:'var(--text2)',fontSize:13,padding:'20px 0',textAlign:'center'}},'No data yet'):
         React.createElement('div',{className:'donut-wrap'},
           React.createElement(Donut,{data:donutData}),
           React.createElement('div',{className:'legend'},
@@ -387,14 +387,14 @@ function App(){
     ),
     React.createElement('div',{className:'card'},
       React.createElement('div',{className:'section-hd'},
-        React.createElement('h3',null,'Postulaciones recientes'),
-        React.createElement('button',{className:'btn btn-sm',onClick:()=>setTab('tracker')},'Ver todas →')
+        React.createElement('h3',null,'Recent applications'),
+        React.createElement('button',{className:'btn btn-sm',onClick:()=>setTab('tracker')},'View all →')
       ),
       jobs.length===0?React.createElement(EmptyState,{onAdd:openAdd}):
       React.createElement('div',{className:'table-wrap'},
         React.createElement('table',null,
           React.createElement('thead',null,React.createElement('tr',null,
-            ['Empresa','Rol','Estado','Próxima acción','Entrevista','Contacto'].map(h=>React.createElement('th',{key:h},h))
+            ['Company','Role','Status','Next action','Interview','Contact'].map(h=>React.createElement('th',{key:h},h))
           )),
           React.createElement('tbody',null,
             recentJobs.map(j=>React.createElement('tr',{key:j.id,style:{cursor:'pointer'},onClick:()=>openDetail(j)},
@@ -416,25 +416,25 @@ function App(){
 
   const Tracker=()=>React.createElement('div',null,
     React.createElement('div',{className:'toolbar'},
-      React.createElement('input',{type:'text',placeholder:'Buscar empresa, rol, contacto...',value:filter,onChange:e=>setFilter(e.target.value)}),
+      React.createElement('input',{type:'text',placeholder:'Search company, role, contact...',value:filter,onChange:e=>setFilter(e.target.value)}),
       React.createElement('select',{value:filterStatus,onChange:e=>setFilterStatus(e.target.value)},
-        React.createElement('option',{value:''},'Todos los estados'),
+        React.createElement('option',{value:''},'All statuses'),
         STATUSES.map(s=>React.createElement('option',{key:s,value:s},s))
       ),
       React.createElement('select',{value:sortBy,onChange:e=>setSortBy(e.target.value)},
-        React.createElement('option',{value:'date'},'Ordenar: fecha'),
-        React.createElement('option',{value:'company'},'Ordenar: empresa'),
-        React.createElement('option',{value:'status'},'Ordenar: estado')
+        React.createElement('option',{value:'date'},'Sort: date'),
+        React.createElement('option',{value:'company'},'Sort: company'),
+        React.createElement('option',{value:'status'},'Sort: status')
       ),
-      React.createElement('button',{className:'btn btn-primary',onClick:openAdd},'+ Nuevo'),
-      React.createElement('button',{className:'btn',onClick:exportCSV,title:'Exportar CSV'},'⬇ CSV')
+      React.createElement('button',{className:'btn btn-primary',onClick:openAdd},'+ New'),
+      React.createElement('button',{className:'btn',onClick:exportCSV,title:'Export CSV'},'⬇ CSV')
     ),
     React.createElement('div',{className:'card'},
       filteredJobs.length===0?React.createElement(EmptyState,{onAdd:openAdd}):
       React.createElement('div',{className:'table-wrap'},
         React.createElement('table',null,
           React.createElement('thead',null,React.createElement('tr',null,
-            ['P','Empresa','Rol','Estado','Fecha','Entrevista','Contacto','Prox. acción','Acciones'].map(h=>React.createElement('th',{key:h},h))
+            ['P','Company','Role','Status','Date','Interview','Contact','Next action','Actions'].map(h=>React.createElement('th',{key:h},h))
           )),
           React.createElement('tbody',null,
             filteredJobs.map(j=>React.createElement('tr',{key:j.id},
@@ -455,8 +455,8 @@ function App(){
               React.createElement('td',{className:'muted'},j.contact||'—'),
               React.createElement('td',{className:'muted'},j.nextAction||'—'),
               React.createElement('td',{style:{whiteSpace:'nowrap'}},
-                React.createElement('button',{className:'btn-icon',title:'Editar',onClick:()=>openEdit(j)},'✏️'),
-                React.createElement('button',{className:'btn-icon del',title:'Eliminar',onClick:()=>deleteJob(j.id)},'🗑')
+                React.createElement('button',{className:'btn-icon',title:'Edit',onClick:()=>openEdit(j)},'✏️'),
+                React.createElement('button',{className:'btn-icon del',title:'Delete',onClick:()=>deleteJob(j.id)},'🗑')
               )
             ))
           )
@@ -491,15 +491,15 @@ function App(){
       ),
       React.createElement('div',{className:'detail-section'},
         React.createElement('div',{className:'form-grid'},
-          detailJob.date&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Fecha postulación'),React.createElement('div',{className:'detail-val'},detailJob.date)),
-          detailJob.interviewDate&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Fecha entrevista'),React.createElement('div',{className:'detail-val'},detailJob.interviewDate)),
-          detailJob.location&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Ubicación'),React.createElement('div',{className:'detail-val'},detailJob.location)),
-          detailJob.contact&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Contacto'),React.createElement('div',{className:'detail-val'},detailJob.contact)),
+          detailJob.date&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Application date'),React.createElement('div',{className:'detail-val'},detailJob.date)),
+          detailJob.interviewDate&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Interview date'),React.createElement('div',{className:'detail-val'},detailJob.interviewDate)),
+          detailJob.location&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Location'),React.createElement('div',{className:'detail-val'},detailJob.location)),
+          detailJob.contact&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Contact'),React.createElement('div',{className:'detail-val'},detailJob.contact)),
         )
       ),
       // Recruiter section
       React.createElement('div',{className:'detail-section'},
-        React.createElement('div',{className:'detail-label',style:{marginBottom:10}},'Contacto / Recruiter'),
+        React.createElement('div',{className:'detail-label',style:{marginBottom:10}},'Contact / Recruiter'),
         detailJob.contact
           ? React.createElement('div',{className:'contact-found'},
               React.createElement('div',{className:'contact-avatar'},detailJob.contact.split(' ').map(w=>w[0]).slice(0,2).join('')),
@@ -511,33 +511,33 @@ function App(){
                 href:`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(detailJob.contact+' '+detailJob.company)}`,
                 target:'_blank',rel:'noopener',
                 style:{marginLeft:'auto'}
-              },React.createElement('button',{className:'btn-li-outline'},'Ver en LinkedIn'))
+              },React.createElement('button',{className:'btn-li-outline'},'View on LinkedIn'))
             )
-          : React.createElement('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:10}},'Sin contacto guardado. Buscá el recruiter en LinkedIn:'),
+          : React.createElement('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:10}},'No contact saved. Search the recruiter on LinkedIn:'),
         React.createElement('div',{style:{display:'flex',gap:8,flexWrap:'wrap',marginTop:detailJob.contact?10:0}},
-          detailJob.url&&React.createElement('button',{className:'btn-li-outline',onClick:()=>liJobPage(detailJob.url)},'👤 Ver oferta (recruiter del aviso)'),
-          React.createElement('button',{className:'btn-li',onClick:()=>liCompanyPeople(detailJob.company)},'🔍 Buscar HR en '+detailJob.company)
+          detailJob.url&&React.createElement('button',{className:'btn-li-outline',onClick:()=>liJobPage(detailJob.url)},'👤 Open posting (recruiter listed)'),
+          React.createElement('button',{className:'btn-li',onClick:()=>liCompanyPeople(detailJob.company)},'🔍 Find HR at '+detailJob.company)
         )
       ),
       detailJob.nextAction&&React.createElement('div',{className:'detail-section'},
-        React.createElement('div',{className:'detail-label'},'Próxima acción'),
+        React.createElement('div',{className:'detail-label'},'Next action'),
         React.createElement('div',{className:'detail-val'},detailJob.nextAction)
       ),
       detailJob.url&&React.createElement('div',{className:'detail-section'},
-        React.createElement('div',{className:'detail-label'},'Oferta'),
+        React.createElement('div',{className:'detail-label'},'Posting'),
         React.createElement('a',{href:detailJob.url,target:'_blank',rel:'noopener',style:{color:'var(--teal)',fontSize:14,wordBreak:'break-all'}},detailJob.url)
       ),
       detailJob.description&&React.createElement('div',{className:'detail-section'},
-        React.createElement('div',{className:'detail-label'},'Descripción del empleo'),
+        React.createElement('div',{className:'detail-label'},'Job description'),
         React.createElement('div',{className:'note-card',style:{maxHeight:220,overflowY:'auto',whiteSpace:'pre-wrap',fontSize:12,lineHeight:1.6}},detailJob.description)
       ),
       detailJob.notes&&React.createElement('div',{className:'detail-section'},
-        React.createElement('div',{className:'detail-label'},'Notas'),
+        React.createElement('div',{className:'detail-label'},'Notes'),
         React.createElement('div',{className:'note-card'},detailJob.notes)
       ),
       React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',marginTop:16}},
-        React.createElement('button',{className:'btn',onClick:()=>setDetailJob(null)},'Cerrar'),
-        React.createElement('button',{className:'btn btn-primary',onClick:()=>{setDetailJob(null);openEdit(detailJob);}},'✏️ Editar')
+        React.createElement('button',{className:'btn',onClick:()=>setDetailJob(null)},'Close'),
+        React.createElement('button',{className:'btn btn-primary',onClick:()=>{setDetailJob(null);openEdit(detailJob);}},'✏️ Edit')
       )
     )
   );
@@ -545,80 +545,80 @@ function App(){
   // Form modal
   const FormModal=()=>modal==='form'&&React.createElement('div',{className:'overlay',onClick:e=>{if(e.target===e.currentTarget)closeModal()}},
     React.createElement('div',{className:'modal'},
-      React.createElement('h2',null,editingId?'Editar postulación':'Nueva postulación'),
+      React.createElement('h2',null,editingId?'Edit application':'New application'),
       React.createElement('div',{className:'form-grid'},
         React.createElement('div',{className:'form-row'},
-          React.createElement('label',null,'Empresa *'),
-          React.createElement('input',{type:'text',value:f('company'),onChange:e=>setF('company',e.target.value),placeholder:'Ej: Acme Corp',autoFocus:true})
+          React.createElement('label',null,'Company *'),
+          React.createElement('input',{type:'text',value:f('company'),onChange:e=>setF('company',e.target.value),placeholder:'e.g. Acme Corp',autoFocus:true})
         ),
         React.createElement('div',{className:'form-row'},
-          React.createElement('label',null,'Rol *'),
-          React.createElement('input',{type:'text',value:f('role'),onChange:e=>setF('role',e.target.value),placeholder:'Ej: UX Designer'})
+          React.createElement('label',null,'Role *'),
+          React.createElement('input',{type:'text',value:f('role'),onChange:e=>setF('role',e.target.value),placeholder:'e.g. UX Designer'})
         )
       ),
       React.createElement('div',{className:'form-grid'},
         React.createElement('div',{className:'form-row'},
-          React.createElement('label',null,'Estado'),
+          React.createElement('label',null,'Status'),
           React.createElement('select',{value:f('status'),onChange:e=>setF('status',e.target.value)},
             STATUSES.map(s=>React.createElement('option',{key:s,value:s},s))
           )
         ),
         React.createElement('div',{className:'form-row'},
-          React.createElement('label',null,'Prioridad'),
+          React.createElement('label',null,'Priority'),
           React.createElement('select',{value:f('priority')||'medium',onChange:e=>setF('priority',e.target.value)},
-            React.createElement('option',{value:'high'},'🔴 Alta'),
-            React.createElement('option',{value:'medium'},'🟡 Media'),
-            React.createElement('option',{value:'low'},'🟢 Baja')
+            React.createElement('option',{value:'high'},'🔴 High'),
+            React.createElement('option',{value:'medium'},'🟡 Medium'),
+            React.createElement('option',{value:'low'},'🟢 Low')
           )
         )
       ),
       React.createElement('div',{className:'form-grid'},
         React.createElement('div',{className:'form-row'},
-          React.createElement('label',null,'Fecha postulación'),
+          React.createElement('label',null,'Application date'),
           React.createElement('input',{type:'date',value:f('date'),onChange:e=>setF('date',e.target.value)})
         ),
         React.createElement('div',{className:'form-row'},
-          React.createElement('label',null,'Fecha entrevista'),
+          React.createElement('label',null,'Interview date'),
           React.createElement('input',{type:'date',value:f('interviewDate'),onChange:e=>setF('interviewDate',e.target.value)})
         )
       ),
       React.createElement('div',{className:'form-grid'},
         React.createElement('div',{className:'form-row'},
-          React.createElement('label',null,'Contacto'),
+          React.createElement('label',null,'Contact'),
           React.createElement('div',{style:{display:'flex',gap:6}},
-            React.createElement('input',{type:'text',value:f('contact'),onChange:e=>setF('contact',e.target.value),placeholder:'Nombre del recruiter',style:{flex:1}}),
+            React.createElement('input',{type:'text',value:f('contact'),onChange:e=>setF('contact',e.target.value),placeholder:'Recruiter name',style:{flex:1}}),
             f('company')&&React.createElement('button',{
               type:'button',
               className:'btn-li',
-              title:'Buscar recruiter en LinkedIn',
+              title:'Search recruiter on LinkedIn',
               onClick:()=>liCompanyPeople(f('company'))
             },'🔍')
           )
         ),
         React.createElement('div',{className:'form-row'},
-          React.createElement('label',null,'Ubicación'),
-          React.createElement('input',{type:'text',value:f('location'),onChange:e=>setF('location',e.target.value),placeholder:'Remote / Híbrido / Ciudad'})
+          React.createElement('label',null,'Location'),
+          React.createElement('input',{type:'text',value:f('location'),onChange:e=>setF('location',e.target.value),placeholder:'Remote / Hybrid / City'})
         )
       ),
       React.createElement('div',{className:'form-row'},
-        React.createElement('label',null,'URL del trabajo'),
+        React.createElement('label',null,'Job URL'),
         React.createElement('input',{type:'url',value:f('url'),onChange:e=>setF('url',e.target.value),placeholder:'https://linkedin.com/...'})
       ),
       React.createElement('div',{className:'form-row'},
-        React.createElement('label',null,'Próxima acción'),
-        React.createElement('input',{type:'text',value:f('nextAction'),onChange:e=>setF('nextAction',e.target.value),placeholder:'Ej: Preparar CV, Follow up...'})
+        React.createElement('label',null,'Next action'),
+        React.createElement('input',{type:'text',value:f('nextAction'),onChange:e=>setF('nextAction',e.target.value),placeholder:'e.g. Polish CV, Follow up...'})
       ),
       React.createElement('div',{className:'form-row'},
-        React.createElement('label',null,'Descripción del empleo'),
-        React.createElement('textarea',{value:f('description')||'',onChange:e=>setF('description',e.target.value),placeholder:'Pegá la descripción del aviso de LinkedIn acá...',style:{minHeight:120}})
+        React.createElement('label',null,'Job description'),
+        React.createElement('textarea',{value:f('description')||'',onChange:e=>setF('description',e.target.value),placeholder:'Paste the LinkedIn job description here...',style:{minHeight:120}})
       ),
       React.createElement('div',{className:'form-row'},
-        React.createElement('label',null,'Notas'),
-        React.createElement('textarea',{value:f('notes'),onChange:e=>setF('notes',e.target.value),placeholder:'Detalles, impresiones, links...'})
+        React.createElement('label',null,'Notes'),
+        React.createElement('textarea',{value:f('notes'),onChange:e=>setF('notes',e.target.value),placeholder:'Details, impressions, links...'})
       ),
       React.createElement('div',{className:'modal-actions'},
-        React.createElement('button',{className:'btn',onClick:closeModal},'Cancelar'),
-        React.createElement('button',{className:'btn btn-primary',onClick:submit},editingId?'Guardar cambios':'Agregar')
+        React.createElement('button',{className:'btn',onClick:closeModal},'Cancel'),
+        React.createElement('button',{className:'btn btn-primary',onClick:submit},editingId?'Save changes':'Add')
       )
     )
   );
@@ -627,15 +627,15 @@ function App(){
     React.createElement('div',{className:'header'},
       React.createElement('h1',null,'Job Interview Tracker'),
       React.createElement('div',{className:'header-right'},
-        React.createElement('span',null,`${total} registros`),
-        React.createElement('button',{className:'btn btn-primary btn-sm',onClick:openAdd},'+ Nuevo')
+        React.createElement('span',null,`${total} records`),
+        React.createElement('button',{className:'btn btn-primary btn-sm',onClick:openAdd},'+ New')
       )
     ),
     error&&React.createElement('div',{style:{background:'#fee2e2',color:'#991b1b',padding:'10px 14px',borderRadius:9,marginBottom:12,fontSize:13,display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}},
       React.createElement('span',null,'⚠️ '+error),
-      React.createElement('button',{className:'btn btn-sm',onClick:reload},'Reintentar')
+      React.createElement('button',{className:'btn btn-sm',onClick:reload},'Retry')
     ),
-    loading&&!error&&React.createElement('div',{style:{textAlign:'center',padding:'24px',color:'var(--text2)',fontSize:13}},'Cargando...'),
+    loading&&!error&&React.createElement('div',{style:{textAlign:'center',padding:'24px',color:'var(--text2)',fontSize:13}},'Loading...'),
     !loading&&React.createElement('div',{className:'tabs'},
       [['dashboard','📊 Dashboard'],['tracker','📋 Tracker']].map(([key,label])=>
         React.createElement('button',{key,className:'tab'+(tab===key?' active':''),onClick:()=>setTab(key)},label)
