@@ -113,9 +113,42 @@ Data lives in `job-tracker-data.json` at the project root. The file has this sha
 
 `PUT` replaces the entire array (it's not per-job). Before each write, the server creates an automatic backup in `backups/`.
 
-## Importing data manually
+## Loading data into the tracker
 
-Stop the server, edit `job-tracker-data.json`, restart. The app will pick up the new data on browser refresh.
+There are two practical ways to populate the database.
+
+### A) Manually
+
+The simplest path:
+
+- Click **+ Nuevo** in the app and fill in the form.
+- Or, with the server stopped, open `job-tracker-data.json` and add an entry to the `jobs` array following the format from the [Database format](#database-format) section. Restart the server and refresh the browser.
+
+For one or two jobs at a time, this is the way.
+
+### B) Scraping job postings from LinkedIn with an AI browser agent
+
+If you've already saved a long list of jobs on LinkedIn, doing them by hand is slow. The workflow used to bootstrap this tracker was:
+
+1. **Save jobs** on LinkedIn (`linkedin.com/my-items/saved-jobs/`).
+2. **Drive a browser-controlling AI agent** (e.g. *Claude in Chrome*, or any tool that can navigate pages and extract text) over each saved job. The flow that works on LinkedIn:
+   - Navigate to the job URL.
+   - Scroll the page down a few times to trigger lazy-load.
+   - **Click the job title** — this is what fully expands the description on LinkedIn (without the click, the description often stays collapsed).
+   - Wait a few seconds, then read the full page text.
+3. **Parse the extracted text.** A few markers help:
+   - Description starts at `Acerca del empleo` (Spanish) or `About the job` (English) and ends before `Establecer una alerta` / `Set alert`.
+   - Recruiter name and title sit under `Conoce al equipo de contratación` / `Meet the hiring team`.
+   - Title, company and location are in the header above the description.
+4. **Build the JSON object** for each job (matching the format in this README) and append it to the `jobs` array — or PUT the merged array to `/api/jobs` if the server is running.
+
+Things to watch:
+
+- **Match by URL, not by ID, when deduplicating.** LinkedIn job IDs and locally generated IDs (e.g. `Date.now()`) collide easily across different scraping sessions. Two records with different IDs but the same URL are the same posting.
+- **External-apply jobs** (LinkedIn shows "Solicitud gestionada fuera de LinkedIn" / "Apply on company site") often don't expose the full description on LinkedIn. Skip them, or scrape the company's careers page directly.
+- **LinkedIn rate-limits aggressive scraping** and prohibits automated extraction in its ToS. Keep volume reasonable, throttle between requests, and treat this as a personal-use workflow.
+
+The output of all this is a JSON file in the format above, which you can drop into `job-tracker-data.json` (replacing it) or merge with the existing data.
 
 ## Project structure
 
