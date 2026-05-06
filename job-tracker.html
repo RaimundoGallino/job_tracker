@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Interview Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#f2f2f4;color:#0f0f12;min-height:100vh}
+@media(prefers-color-scheme:dark){body{background:#0c0c0e;color:#f1f5f9}}
+
+:root{
+  --navy:#111214;--navy2:#1c1c22;
+  --teal:#1d9e75;--teal2:#0f6e56;
+  --card:#ffffff;--hover:#f5f5f7;
+  --border:rgba(0,0,0,0.09);
+  --text:#0f172a;--text2:#64748b;
+  --bg:#f2f2f4;--bg2:#e5e5ea;
+}
+@media(prefers-color-scheme:dark){:root{
+  --card:#18181c;--hover:#222228;
+  --border:rgba(255,255,255,0.07);
+  --text:#f0f0f2;--text2:#8b8b99;
+  --bg:#0c0c0e;--bg2:#16161b;
+}}
+
+.app{max-width:1000px;margin:0 auto;padding:20px 16px}
+
+/* Header */
+.header{background:var(--navy);border-radius:14px;padding:22px 28px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.header h1{color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.5px}
+.header-right{display:flex;align-items:center;gap:12px}
+.header span{color:rgba(255,255,255,0.5);font-size:13px}
+
+/* Nav */
+.tabs{display:flex;gap:4px;background:var(--card);border-radius:11px;padding:5px;margin-bottom:16px;border:0.5px solid var(--border)}
+.tab{flex:1;padding:9px 8px;border:none;background:transparent;cursor:pointer;border-radius:7px;font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;font-family:inherit}
+.tab.active{background:var(--navy);color:#fff}
+.tab:hover:not(.active){background:var(--hover)}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:var(--card);border-radius:11px;padding:16px 18px;border:0.5px solid var(--border)}
+.stat-icon{font-size:18px;margin-bottom:8px}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:.6px;color:var(--text2);text-transform:uppercase;margin-bottom:5px}
+.stat-val{font-size:28px;font-weight:700;line-height:1;margin-bottom:3px}
+.stat-sub{font-size:12px;color:var(--text2)}
+.s1 .stat-val{color:#111214} .s2 .stat-val{color:#1d9e75} .s3 .stat-val{color:#d97706} .s4 .stat-val{color:#7c3aed}
+@media(prefers-color-scheme:dark){.s1 .stat-val{color:#e0e0e6}}
+
+/* Two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.card{background:var(--card);border-radius:11px;padding:18px;border:0.5px solid var(--border)}
+.card-title{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text2);margin-bottom:14px}
+
+/* Pipeline */
+.pipeline-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;font-size:13px}
+.pipeline-label{width:78px;color:var(--text2);font-size:12px}
+.bar-wrap{flex:1;height:12px;background:var(--bg2);border-radius:20px;overflow:hidden}
+.bar{height:100%;border-radius:20px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.pipeline-count{width:22px;text-align:right;font-weight:600;font-size:12px}
+.pipeline-pct{width:36px;text-align:right;color:var(--text2);font-size:12px}
+.conversion{display:flex;justify-content:space-between;padding-top:12px;border-top:0.5px solid var(--border);margin-top:4px;font-size:12px;color:var(--text2)}
+.conversion b{color:var(--teal)}
+
+/* Donut */
+.donut-wrap{display:flex;align-items:center;gap:18px}
+.donut-svg{flex-shrink:0}
+.legend{flex:1;display:flex;flex-direction:column;gap:8px}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.ldot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* Table */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);padding:9px 10px;border-bottom:0.5px solid var(--border);text-align:left;white-space:nowrap;background:var(--card)}
+td{padding:10px 10px;border-bottom:0.5px solid var(--border);vertical-align:middle;color:var(--text)}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--hover)}
+.company-cell{font-weight:600;color:var(--teal)}
+@media(prefers-color-scheme:dark){.company-cell{color:#34d399}}
+.muted{color:var(--text2)!important}
+
+/* Badges */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-applied{background:#dbeafe;color:#1e40af}
+.b-screening{background:#d1fae5;color:#065f46}
+.b-interview{background:#fef3c7;color:#92400e}
+.b-offer{background:#dcfce7;color:#166534}
+.b-rejected{background:#fee2e2;color:#991b1b}
+.b-withdrawn{background:#f1f5f9;color:#475569}
+@media(prefers-color-scheme:dark){
+  .b-applied{background:#1e3a5f;color:#93c5fd}
+  .b-screening{background:#064e3b;color:#6ee7b7}
+  .b-interview{background:#451a03;color:#fcd34d}
+  .b-offer{background:#14532d;color:#86efac}
+  .b-rejected{background:#450a0a;color:#fca5a5}
+  .b-withdrawn{background:#1e293b;color:#94a3b8}
+}
+.b-planned{background:#ede9fe;color:#5b21b6}
+@media(prefers-color-scheme:dark){.b-planned{background:#2e1065;color:#c4b5fd}}
+
+/* Buttons */
+.btn{padding:9px 16px;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;border:0.5px solid var(--border);background:var(--card);color:var(--text);transition:all .15s;font-family:inherit}
+.btn:hover{background:var(--hover)}
+.btn-primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-primary:hover{background:var(--navy2)}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-icon{background:none;border:none;cursor:pointer;padding:5px 8px;border-radius:6px;font-size:13px;transition:background .15s}
+.btn-icon:hover{background:var(--hover)}
+.btn-icon.del:hover{background:#fee2e2;color:#991b1b}
+
+/* Toolbar */
+.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.toolbar input,.toolbar select{padding:9px 12px;border-radius:9px;border:0.5px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--navy)}
+.toolbar input{flex:1;min-width:160px}
+
+/* Section header */
+.section-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.section-hd h3{font-size:14px;font-weight:600}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;backdrop-filter:blur(2px)}
+.modal{background:var(--card);border-radius:14px;padding:26px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border:0.5px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:20px}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:10px 12px;border-radius:8px;border:0.5px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--navy)}
+.form-row textarea{resize:vertical;min-height:72px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:0.5px solid var(--border)}
+
+/* Empty */
+.empty{text-align:center;padding:48px 20px;color:var(--text2)}
+.empty-icon{font-size:36px;margin-bottom:14px}
+.empty p{font-size:14px}
+.empty small{font-size:13px;margin-top:6px;display:block;opacity:.7}
+
+/* Note card */
+.note-card{background:var(--bg2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text2);margin-top:10px}
+
+/* Tag */
+.priority{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}
+
+/* Recruiter search */
+.recruiter-bar{display:flex;align-items:center;gap:8px;background:var(--bg2);border-radius:9px;padding:10px 14px;margin-bottom:14px}
+.recruiter-bar span{flex:1;font-size:13px;color:var(--text2)}
+.btn-li{background:#0a66c2;color:#fff;border:none;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-li:hover{background:#004182}
+.btn-li-outline{background:transparent;color:#0a66c2;border:1.5px solid #0a66c2;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-li-outline:hover{background:#e8f0f9}
+@media(prefers-color-scheme:dark){.btn-li-outline{color:#a0a0b0;border-color:#a0a0b0}.btn-li-outline:hover{background:#222228}}
+.contact-found{display:flex;align-items:center;gap:8px;font-size:13px;padding:8px 0}
+.contact-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--teal);flex-shrink:0}
+.detail-section{margin-bottom:16px;padding-bottom:16px;border-bottom:0.5px solid var(--border)}
+.detail-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.detail-label{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);margin-bottom:4px}
+.detail-val{font-size:14px;color:var(--text)}
+
+@media(max-width:620px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .two-col{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .header{padding:16px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const {useState,useEffect,useRef,useCallback,useMemo}=React;
+
+const STATUSES=['Planned','Applied','Screening','Interview','Offer','Rejected','Withdrawn'];
+const STATUS_COLORS={'Planned':'#7c3aed','Applied':'#3b82f6','Screening':'#10b981','Interview':'#f59e0b','Offer':'#22c55e','Rejected':'#ef4444','Withdrawn':'#94a3b8'};
+
+
+const PRIORITY_COLOR={'high':'#ef4444','medium':'#f59e0b','low':'#22c55e'};
+
+
+const API='/api/jobs';
+async function fetchJobs(){
+  const r=await fetch(API);
+  if(!r.ok) throw new Error('GET '+r.status);
+  return r.json();
+}
+async function pushJobs(jobs){
+  const r=await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(jobs)});
+  if(!r.ok) throw new Error('PUT '+r.status);
+  return r.json();
+}
+
+function badgeClass(s){return 'badge b-'+(s||'').toLowerCase();}
+
+// Simple donut drawn with SVG
+function Donut({data,size=130}){
+  const total=data.reduce((a,d)=>a+d.v,0);
+  if(!total)return React.createElement('div',{style:{width:size,height:size,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text2)',fontSize:12}},'Sin datos');
+  let offset=0;
+  const r=48,cx=65,cy=65,circ=2*Math.PI*r;
+  const slices=data.map(d=>{
+    const pct=d.v/total;
+    const dash=pct*circ;
+    const gap=circ-dash;
+    const rot=offset*360;
+    offset+=pct;
+    return{...d,dash,gap,rot};
+  });
+  return React.createElement('svg',{className:'donut-svg',width:size,height:size,viewBox:'0 0 130 130'},
+    slices.map((s,i)=>
+      React.createElement('circle',{key:i,cx,cy,r,fill:'none',stroke:s.c,strokeWidth:16,
+        strokeDasharray:`${s.dash} ${s.gap}`,
+        strokeDashoffset:0,
+        transform:`rotate(${s.rot-90} ${cx} ${cy})`,
+        style:{transition:'stroke-dasharray .4s ease'}
+      })
+    ),
+    React.createElement('text',{x:cx,y:cy-6,textAnchor:'middle',fontSize:20,fontWeight:700,fill:'var(--text)'},total),
+    React.createElement('text',{x:cx,y:cy+12,textAnchor:'middle',fontSize:10,fill:'var(--text2)'},'total')
+  );
+}
+
+function EmptyState({onAdd}){
+  return React.createElement('div',{className:'empty'},
+    React.createElement('div',{className:'empty-icon'},'📋'),
+    React.createElement('p',null,'No hay postulaciones todavía'),
+    React.createElement('small',null,'Agregá tu primera oportunidad para empezar a trackear'),
+    React.createElement('br'),
+    React.createElement('button',{className:'btn btn-primary',style:{marginTop:14},onClick:onAdd},'+ Agregar trabajo')
+  );
+}
+
+function App(){
+  const [jobs,setJobs]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+  const reload=useCallback(()=>{
+    setLoading(true);setError(null);
+    fetchJobs().then(setJobs).catch(e=>setError(e.message)).finally(()=>setLoading(false));
+  },[]);
+  useEffect(()=>{reload();},[reload]);
+  const [tab,setTab]=useState('dashboard');
+  const [modal,setModal]=useState(null);
+  const [editingId,setEditingId]=useState(null);
+  const [detailJob,setDetailJob]=useState(null);
+  const [filter,setFilter]=useState('');
+  const [filterStatus,setFilterStatus]=useState('');
+  const [sortBy,setSortBy]=useState('date');
+  const [form,setForm]=useState({});
+
+  const persist=useCallback(updated=>{setJobs(updated);pushJobs(updated).catch(e=>setError('No se pudo guardar: '+e.message));},[]);
+
+  const openAdd=()=>{
+    setForm({company:'',role:'',status:'Planned',date:new Date().toISOString().split('T')[0],interviewDate:'',contact:'',nextAction:'',notes:'',location:'',url:'',priority:'medium'});
+    setEditingId(null);setModal('form');
+  };
+  const openEdit=j=>{setForm({...j});setEditingId(j.id);setModal('form');};
+  const openDetail=j=>setDetailJob(j);
+  const closeModal=()=>{setModal(null);setEditingId(null);};
+
+  const f=k=>form[k]??'';
+  const setF=(k,v)=>setForm(p=>({...p,[k]:v}));
+
+  const submit=()=>{
+    if(!form.company.trim()||!form.role.trim())return alert('Empresa y rol son obligatorios');
+    let updated;
+    if(editingId){
+      updated=jobs.map(j=>j.id===editingId?{...form,id:editingId}:j);
+    }else{
+      updated=[{...form,id:Date.now()},...jobs];
+    }
+    persist(updated);
+    closeModal();
+    // update detail if open
+    if(detailJob&&detailJob.id===editingId)setDetailJob({...form,id:editingId});
+  };
+
+  const deleteJob=id=>{
+    if(!confirm('¿Eliminar esta postulación?'))return;
+    persist(jobs.filter(j=>j.id!==id));
+    if(detailJob&&detailJob.id===id)setDetailJob(null);
+  };
+
+  const changeStatus=(id,status)=>{
+    const updated=jobs.map(j=>j.id===id?{...j,status}:j);
+    persist(updated);
+    if(detailJob&&detailJob.id===id)setDetailJob(p=>({...p,status}));
+  };
+
+  // Stats
+  const total=jobs.length;
+  const planned=jobs.filter(j=>j.status==='Planned').length;
+  const interviews=jobs.filter(j=>['Interview','Offer'].includes(j.status)).length;
+  const offers=jobs.filter(j=>j.status==='Offer').length;
+  const responded=jobs.filter(j=>!['Applied','Planned'].includes(j.status)).length;
+  const applied=jobs.filter(j=>j.status!=='Planned').length;
+  const responseRate=applied?Math.round(responded/applied*100):0;
+  const convRate=applied?Math.round(offers/applied*100):0;
+
+  const statusCounts={};
+  STATUSES.forEach(s=>{statusCounts[s]=jobs.filter(j=>j.status===s).length;});
+
+  const donutData=STATUSES.filter(s=>statusCounts[s]>0).map(s=>({label:s,v:statusCounts[s],c:STATUS_COLORS[s]}));
+
+  // Filtered & sorted list
+  const filteredJobs=useMemo(()=>{
+    return jobs
+      .filter(j=>{
+        const q=filter.toLowerCase();
+        const matchQ=!q||(j.company+' '+j.role+' '+(j.contact||'')).toLowerCase().includes(q);
+        const matchS=!filterStatus||j.status===filterStatus;
+        return matchQ&&matchS;
+      })
+      .sort((a,b)=>{
+        if(sortBy==='company')return a.company.localeCompare(b.company);
+        if(sortBy==='status')return STATUSES.indexOf(a.status)-STATUSES.indexOf(b.status);
+        return new Date(b.date||0)-new Date(a.date||0);
+      });
+  },[jobs,filter,filterStatus,sortBy]);
+
+  const recentJobs=useMemo(()=>jobs.slice().sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).slice(0,6),[jobs]);
+
+  // Export CSV
+  const exportCSV=()=>{
+    const headers=['Empresa','Rol','Estado','Fecha','Fecha Entrevista','Contacto','Próx. acción','Ubicación','Notas','URL'];
+    const rows=jobs.map(j=>[j.company,j.role,j.status,j.date,j.interviewDate,j.contact,j.nextAction,j.location,j.notes,j.url].map(v=>`"${(v||'').replace(/"/g,'""')}"`));
+    const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+    const a=document.createElement('a');
+    a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+    a.download='job-tracker.csv';a.click();
+  };
+
+  // ===== VIEWS =====
+
+  const Dashboard=()=>React.createElement('div',null,
+    React.createElement('div',{className:'stats-grid'},
+      [
+        {cls:'s1',icon:'💼',label:'Postuladas',val:applied,sub:`${planned} planeadas`},
+        {cls:'s2',icon:'🎯',label:'Entrevistas',val:interviews,sub:applied?`${Math.round(interviews/applied*100)}% del total`:'—'},
+        {cls:'s3',icon:'🏆',label:'Ofertas',val:offers,sub:applied?`${convRate}% conversión`:'—'},
+        {cls:'s4',icon:'📈',label:'Tasa respuesta',val:responseRate+'%',sub:responseRate>=50?'¡Muy bien!':'Seguí aplicando'},
+      ].map(({cls,icon,label,val,sub})=>
+        React.createElement('div',{key:cls,className:`stat-card ${cls}`},
+          React.createElement('div',{className:'stat-icon'},icon),
+          React.createElement('div',{className:'stat-label'},label),
+          React.createElement('div',{className:'stat-val'},val),
+          React.createElement('div',{className:'stat-sub'},sub)
+        )
+      )
+    ),
+    React.createElement('div',{className:'two-col'},
+      React.createElement('div',{className:'card'},
+        React.createElement('div',{className:'card-title'},'Pipeline'),
+        STATUSES.map(s=>React.createElement('div',{key:s,className:'pipeline-row'},
+          React.createElement('span',{className:'pipeline-label'},s),
+          React.createElement('div',{className:'bar-wrap'},
+            React.createElement('div',{className:'bar',style:{width:total?`${statusCounts[s]/total*100}%`:'0%',background:STATUS_COLORS[s]}})
+          ),
+          React.createElement('span',{className:'pipeline-count'},statusCounts[s]),
+          React.createElement('span',{className:'pipeline-pct'},total?`${Math.round(statusCounts[s]/total*100)}%`:'—')
+        )),
+        React.createElement('div',{className:'conversion'},
+          React.createElement('span',null,'Conversión (Applied → Offer)'),
+          React.createElement('b',null,convRate+'%')
+        )
+      ),
+      React.createElement('div',{className:'card'},
+        React.createElement('div',{className:'card-title'},'Distribución'),
+        jobs.length===0?React.createElement('div',{style:{color:'var(--text2)',fontSize:13,padding:'20px 0',textAlign:'center'}},'Sin datos aún'):
+        React.createElement('div',{className:'donut-wrap'},
+          React.createElement(Donut,{data:donutData}),
+          React.createElement('div',{className:'legend'},
+            donutData.map(d=>React.createElement('div',{key:d.label,className:'legend-row'},
+              React.createElement('div',{className:'ldot',style:{background:d.c}}),
+              React.createElement('span',{style:{color:'var(--text2)'}},d.label+' '),
+              React.createElement('b',null,d.v),
+              React.createElement('span',{style:{color:'var(--text2)',fontSize:11}},` (${total?Math.round(d.v/total*100):0}%)`)
+            ))
+          )
+        )
+      )
+    ),
+    React.createElement('div',{className:'card'},
+      React.createElement('div',{className:'section-hd'},
+        React.createElement('h3',null,'Postulaciones recientes'),
+        React.createElement('button',{className:'btn btn-sm',onClick:()=>setTab('tracker')},'Ver todas →')
+      ),
+      jobs.length===0?React.createElement(EmptyState,{onAdd:openAdd}):
+      React.createElement('div',{className:'table-wrap'},
+        React.createElement('table',null,
+          React.createElement('thead',null,React.createElement('tr',null,
+            ['Empresa','Rol','Estado','Próxima acción','Entrevista','Contacto'].map(h=>React.createElement('th',{key:h},h))
+          )),
+          React.createElement('tbody',null,
+            recentJobs.map(j=>React.createElement('tr',{key:j.id,style:{cursor:'pointer'},onClick:()=>openDetail(j)},
+              React.createElement('td',null,
+                React.createElement('span',{className:'priority',style:{background:PRIORITY_COLOR[j.priority||'medium']}}),
+                React.createElement('span',{className:'company-cell'},j.company)
+              ),
+              React.createElement('td',{className:'muted'},j.role),
+              React.createElement('td',null,React.createElement('span',{className:badgeClass(j.status)},j.status)),
+              React.createElement('td',{className:'muted'},j.nextAction||'—'),
+              React.createElement('td',{className:'muted'},j.interviewDate||'—'),
+              React.createElement('td',{className:'muted'},j.contact||'—')
+            ))
+          )
+        )
+      )
+    )
+  );
+
+  const Tracker=()=>React.createElement('div',null,
+    React.createElement('div',{className:'toolbar'},
+      React.createElement('input',{type:'text',placeholder:'Buscar empresa, rol, contacto...',value:filter,onChange:e=>setFilter(e.target.value)}),
+      React.createElement('select',{value:filterStatus,onChange:e=>setFilterStatus(e.target.value)},
+        React.createElement('option',{value:''},'Todos los estados'),
+        STATUSES.map(s=>React.createElement('option',{key:s,value:s},s))
+      ),
+      React.createElement('select',{value:sortBy,onChange:e=>setSortBy(e.target.value)},
+        React.createElement('option',{value:'date'},'Ordenar: fecha'),
+        React.createElement('option',{value:'company'},'Ordenar: empresa'),
+        React.createElement('option',{value:'status'},'Ordenar: estado')
+      ),
+      React.createElement('button',{className:'btn btn-primary',onClick:openAdd},'+ Nuevo'),
+      React.createElement('button',{className:'btn',onClick:exportCSV,title:'Exportar CSV'},'⬇ CSV')
+    ),
+    React.createElement('div',{className:'card'},
+      filteredJobs.length===0?React.createElement(EmptyState,{onAdd:openAdd}):
+      React.createElement('div',{className:'table-wrap'},
+        React.createElement('table',null,
+          React.createElement('thead',null,React.createElement('tr',null,
+            ['P','Empresa','Rol','Estado','Fecha','Entrevista','Contacto','Prox. acción','Acciones'].map(h=>React.createElement('th',{key:h},h))
+          )),
+          React.createElement('tbody',null,
+            filteredJobs.map(j=>React.createElement('tr',{key:j.id},
+              React.createElement('td',null,React.createElement('span',{className:'priority',style:{background:PRIORITY_COLOR[j.priority||'medium'],width:8,height:8}})),
+              React.createElement('td',{className:'company-cell',style:{cursor:'pointer'},onClick:()=>openDetail(j)},j.company),
+              React.createElement('td',{className:'muted'},j.role),
+              React.createElement('td',null,
+                React.createElement('select',{
+                  value:j.status,
+                  className:badgeClass(j.status),
+                  style:{border:'none',background:'inherit',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:11},
+                  onChange:e=>changeStatus(j.id,e.target.value),
+                  onClick:e=>e.stopPropagation()
+                },STATUSES.map(s=>React.createElement('option',{key:s,value:s},s)))
+              ),
+              React.createElement('td',{className:'muted'},j.date||'—'),
+              React.createElement('td',{className:'muted'},j.interviewDate||'—'),
+              React.createElement('td',{className:'muted'},j.contact||'—'),
+              React.createElement('td',{className:'muted'},j.nextAction||'—'),
+              React.createElement('td',{style:{whiteSpace:'nowrap'}},
+                React.createElement('button',{className:'btn-icon',title:'Editar',onClick:()=>openEdit(j)},'✏️'),
+                React.createElement('button',{className:'btn-icon del',title:'Eliminar',onClick:()=>deleteJob(j.id)},'🗑')
+              )
+            ))
+          )
+        )
+      )
+    )
+  );
+
+  // Recruiter search helpers
+  function liJobSearch(company, role){
+    // Search for recruiters/HR at company
+    const q = encodeURIComponent(`recruiter OR "talent acquisition" OR "HR" "${company}"`);
+    window.open(`https://www.linkedin.com/search/results/people/?keywords=${q}`, '_blank');
+  }
+  function liJobPage(url){
+    if(url) window.open(url, '_blank');
+  }
+  function liCompanyPeople(company){
+    const q = encodeURIComponent(company);
+    window.open(`https://www.linkedin.com/search/results/people/?keywords=recruiter+OR+%22talent+acquisition%22&company=${q}`, '_blank');
+  }
+
+  // Detail modal
+  const DetailModal=()=>detailJob&&React.createElement('div',{className:'overlay',onClick:e=>{if(e.target===e.currentTarget)setDetailJob(null)}},
+    React.createElement('div',{className:'modal'},
+      React.createElement('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:16}},
+        React.createElement('div',null,
+          React.createElement('h2',{style:{marginBottom:4}},detailJob.company),
+          React.createElement('p',{style:{color:'var(--text2)',fontSize:14}},detailJob.role)
+        ),
+        React.createElement('span',{className:badgeClass(detailJob.status)},detailJob.status)
+      ),
+      React.createElement('div',{className:'detail-section'},
+        React.createElement('div',{className:'form-grid'},
+          detailJob.date&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Fecha postulación'),React.createElement('div',{className:'detail-val'},detailJob.date)),
+          detailJob.interviewDate&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Fecha entrevista'),React.createElement('div',{className:'detail-val'},detailJob.interviewDate)),
+          detailJob.location&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Ubicación'),React.createElement('div',{className:'detail-val'},detailJob.location)),
+          detailJob.contact&&React.createElement('div',null,React.createElement('div',{className:'detail-label'},'Contacto'),React.createElement('div',{className:'detail-val'},detailJob.contact)),
+        )
+      ),
+      // Recruiter section
+      React.createElement('div',{className:'detail-section'},
+        React.createElement('div',{className:'detail-label',style:{marginBottom:10}},'Contacto / Recruiter'),
+        detailJob.contact
+          ? React.createElement('div',{className:'contact-found'},
+              React.createElement('div',{className:'contact-avatar'},detailJob.contact.split(' ').map(w=>w[0]).slice(0,2).join('')),
+              React.createElement('div',null,
+                React.createElement('div',{style:{fontWeight:600,fontSize:14}},detailJob.contact),
+                React.createElement('div',{style:{fontSize:12,color:'var(--text2)'}},detailJob.company)
+              ),
+              React.createElement('a',{
+                href:`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(detailJob.contact+' '+detailJob.company)}`,
+                target:'_blank',rel:'noopener',
+                style:{marginLeft:'auto'}
+              },React.createElement('button',{className:'btn-li-outline'},'Ver en LinkedIn'))
+            )
+          : React.createElement('p',{style:{fontSize:13,color:'var(--text2)',marginBottom:10}},'Sin contacto guardado. Buscá el recruiter en LinkedIn:'),
+        React.createElement('div',{style:{display:'flex',gap:8,flexWrap:'wrap',marginTop:detailJob.contact?10:0}},
+          detailJob.url&&React.createElement('button',{className:'btn-li-outline',onClick:()=>liJobPage(detailJob.url)},'👤 Ver oferta (recruiter del aviso)'),
+          React.createElement('button',{className:'btn-li',onClick:()=>liCompanyPeople(detailJob.company)},'🔍 Buscar HR en '+detailJob.company)
+        )
+      ),
+      detailJob.nextAction&&React.createElement('div',{className:'detail-section'},
+        React.createElement('div',{className:'detail-label'},'Próxima acción'),
+        React.createElement('div',{className:'detail-val'},detailJob.nextAction)
+      ),
+      detailJob.url&&React.createElement('div',{className:'detail-section'},
+        React.createElement('div',{className:'detail-label'},'Oferta'),
+        React.createElement('a',{href:detailJob.url,target:'_blank',rel:'noopener',style:{color:'var(--teal)',fontSize:14,wordBreak:'break-all'}},detailJob.url)
+      ),
+      detailJob.description&&React.createElement('div',{className:'detail-section'},
+        React.createElement('div',{className:'detail-label'},'Descripción del empleo'),
+        React.createElement('div',{className:'note-card',style:{maxHeight:220,overflowY:'auto',whiteSpace:'pre-wrap',fontSize:12,lineHeight:1.6}},detailJob.description)
+      ),
+      detailJob.notes&&React.createElement('div',{className:'detail-section'},
+        React.createElement('div',{className:'detail-label'},'Notas'),
+        React.createElement('div',{className:'note-card'},detailJob.notes)
+      ),
+      React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',marginTop:16}},
+        React.createElement('button',{className:'btn',onClick:()=>setDetailJob(null)},'Cerrar'),
+        React.createElement('button',{className:'btn btn-primary',onClick:()=>{setDetailJob(null);openEdit(detailJob);}},'✏️ Editar')
+      )
+    )
+  );
+
+  // Form modal
+  const FormModal=()=>modal==='form'&&React.createElement('div',{className:'overlay',onClick:e=>{if(e.target===e.currentTarget)closeModal()}},
+    React.createElement('div',{className:'modal'},
+      React.createElement('h2',null,editingId?'Editar postulación':'Nueva postulación'),
+      React.createElement('div',{className:'form-grid'},
+        React.createElement('div',{className:'form-row'},
+          React.createElement('label',null,'Empresa *'),
+          React.createElement('input',{type:'text',value:f('company'),onChange:e=>setF('company',e.target.value),placeholder:'Ej: Acme Corp',autoFocus:true})
+        ),
+        React.createElement('div',{className:'form-row'},
+          React.createElement('label',null,'Rol *'),
+          React.createElement('input',{type:'text',value:f('role'),onChange:e=>setF('role',e.target.value),placeholder:'Ej: UX Designer'})
+        )
+      ),
+      React.createElement('div',{className:'form-grid'},
+        React.createElement('div',{className:'form-row'},
+          React.createElement('label',null,'Estado'),
+          React.createElement('select',{value:f('status'),onChange:e=>setF('status',e.target.value)},
+            STATUSES.map(s=>React.createElement('option',{key:s,value:s},s))
+          )
+        ),
+        React.createElement('div',{className:'form-row'},
+          React.createElement('label',null,'Prioridad'),
+          React.createElement('select',{value:f('priority')||'medium',onChange:e=>setF('priority',e.target.value)},
+            React.createElement('option',{value:'high'},'🔴 Alta'),
+            React.createElement('option',{value:'medium'},'🟡 Media'),
+            React.createElement('option',{value:'low'},'🟢 Baja')
+          )
+        )
+      ),
+      React.createElement('div',{className:'form-grid'},
+        React.createElement('div',{className:'form-row'},
+          React.createElement('label',null,'Fecha postulación'),
+          React.createElement('input',{type:'date',value:f('date'),onChange:e=>setF('date',e.target.value)})
+        ),
+        React.createElement('div',{className:'form-row'},
+          React.createElement('label',null,'Fecha entrevista'),
+          React.createElement('input',{type:'date',value:f('interviewDate'),onChange:e=>setF('interviewDate',e.target.value)})
+        )
+      ),
+      React.createElement('div',{className:'form-grid'},
+        React.createElement('div',{className:'form-row'},
+          React.createElement('label',null,'Contacto'),
+          React.createElement('div',{style:{display:'flex',gap:6}},
+            React.createElement('input',{type:'text',value:f('contact'),onChange:e=>setF('contact',e.target.value),placeholder:'Nombre del recruiter',style:{flex:1}}),
+            f('company')&&React.createElement('button',{
+              type:'button',
+              className:'btn-li',
+              title:'Buscar recruiter en LinkedIn',
+              onClick:()=>liCompanyPeople(f('company'))
+            },'🔍')
+          )
+        ),
+        React.createElement('div',{className:'form-row'},
+          React.createElement('label',null,'Ubicación'),
+          React.createElement('input',{type:'text',value:f('location'),onChange:e=>setF('location',e.target.value),placeholder:'Remote / Híbrido / Ciudad'})
+        )
+      ),
+      React.createElement('div',{className:'form-row'},
+        React.createElement('label',null,'URL del trabajo'),
+        React.createElement('input',{type:'url',value:f('url'),onChange:e=>setF('url',e.target.value),placeholder:'https://linkedin.com/...'})
+      ),
+      React.createElement('div',{className:'form-row'},
+        React.createElement('label',null,'Próxima acción'),
+        React.createElement('input',{type:'text',value:f('nextAction'),onChange:e=>setF('nextAction',e.target.value),placeholder:'Ej: Preparar CV, Follow up...'})
+      ),
+      React.createElement('div',{className:'form-row'},
+        React.createElement('label',null,'Descripción del empleo'),
+        React.createElement('textarea',{value:f('description')||'',onChange:e=>setF('description',e.target.value),placeholder:'Pegá la descripción del aviso de LinkedIn acá...',style:{minHeight:120}})
+      ),
+      React.createElement('div',{className:'form-row'},
+        React.createElement('label',null,'Notas'),
+        React.createElement('textarea',{value:f('notes'),onChange:e=>setF('notes',e.target.value),placeholder:'Detalles, impresiones, links...'})
+      ),
+      React.createElement('div',{className:'modal-actions'},
+        React.createElement('button',{className:'btn',onClick:closeModal},'Cancelar'),
+        React.createElement('button',{className:'btn btn-primary',onClick:submit},editingId?'Guardar cambios':'Agregar')
+      )
+    )
+  );
+
+  return React.createElement('div',{className:'app'},
+    React.createElement('div',{className:'header'},
+      React.createElement('h1',null,'Job Interview Tracker'),
+      React.createElement('div',{className:'header-right'},
+        React.createElement('span',null,`${total} registros`),
+        React.createElement('button',{className:'btn btn-primary btn-sm',onClick:openAdd},'+ Nuevo')
+      )
+    ),
+    error&&React.createElement('div',{style:{background:'#fee2e2',color:'#991b1b',padding:'10px 14px',borderRadius:9,marginBottom:12,fontSize:13,display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}},
+      React.createElement('span',null,'⚠️ '+error),
+      React.createElement('button',{className:'btn btn-sm',onClick:reload},'Reintentar')
+    ),
+    loading&&!error&&React.createElement('div',{style:{textAlign:'center',padding:'24px',color:'var(--text2)',fontSize:13}},'Cargando...'),
+    !loading&&React.createElement('div',{className:'tabs'},
+      [['dashboard','📊 Dashboard'],['tracker','📋 Tracker']].map(([key,label])=>
+        React.createElement('button',{key,className:'tab'+(tab===key?' active':''),onClick:()=>setTab(key)},label)
+      )
+    ),
+    tab==='dashboard'?Dashboard():Tracker(),
+    FormModal(),
+    DetailModal()
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('app')).render(React.createElement(App));
+</script>
+</body>
+</html>

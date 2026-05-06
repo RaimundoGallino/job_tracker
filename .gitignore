@@ -1,0 +1,8 @@
+node_modules/
+backups/
+files/
+files.zip
+.claude/
+*.tmp
+.DS_Store
+Thumbs.db
