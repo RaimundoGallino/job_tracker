@@ -1,26 +1,26 @@
 # Job Tracker
 
-App web para llevar el seguimiento de postulaciones laborales. Backend en Node.js (Express), frontend en React (vía CDN, sin build step). La base de datos es un único archivo JSON que vive en disco — no necesitás configurar nada.
+Web app for tracking job applications. Node.js + Express backend, React frontend (loaded via CDN, no build step). The database is a single JSON file on disk — no setup required.
 
 ## Features
 
-- Dashboard con stats (postulaciones, entrevistas, ofertas, tasa de respuesta)
-- Pipeline visual de estados con barras + donut chart
-- Tabla con filtros, búsqueda y ordenamiento
-- Estados: `Planned`, `Applied`, `Screening`, `Interview`, `Offer`, `Rejected`, `Withdrawn`
-- Prioridad por job (alta / media / baja)
-- Modal de detalle con búsqueda de recruiters en LinkedIn
-- Export CSV
-- Backups automáticos del JSON en cada escritura
-- Persistencia automática: cualquier cambio se guarda al toque
+- Dashboard with stats (applications, interviews, offers, response rate)
+- Visual pipeline with bar charts and donut chart
+- Searchable, filterable, sortable table
+- Statuses: `Planned`, `Applied`, `Screening`, `Interview`, `Offer`, `Rejected`, `Withdrawn`
+- Per-job priority (high / medium / low)
+- Detail modal with LinkedIn recruiter search shortcuts
+- CSV export
+- Automatic backups on every write
+- Auto-save: any change is persisted immediately
 
-## Requisitos
+## Requirements
 
 - Node.js >= 20
 
-Eso es todo. La única dependencia de runtime es `express`, declarada en `package.json`.
+That's it. The only runtime dependency is `express`, declared in `package.json`.
 
-## Instalación
+## Installation
 
 ```bash
 git clone https://github.com/RaimundoGallino/job_tracker.git
@@ -28,19 +28,19 @@ cd job_tracker
 npm install
 ```
 
-## Uso
+## Usage
 
 ```bash
 npm start
 ```
 
-Abrí [http://localhost:8001](http://localhost:8001) en el browser.
+Open [http://localhost:8001](http://localhost:8001) in your browser.
 
-El server escucha en `0.0.0.0:8001`, así que también podés acceder desde otros dispositivos en la misma red local.
+The server listens on `0.0.0.0:8001`, so you can also access it from other devices on the same local network.
 
-## Formato de la base de datos
+## Database format
 
-Los datos viven en `job-tracker-data.json` en la raíz del proyecto. El archivo tiene esta estructura:
+Data lives in `job-tracker-data.json` at the project root. The file has this shape:
 
 ```json
 {
@@ -57,12 +57,12 @@ Los datos viven en `job-tracker-data.json` en la raíz del proyecto. El archivo 
       "interviewDate": "",
       "contact": "Jane Doe",
       "contactTitle": "Senior Recruiter",
-      "nextAction": "Esperar respuesta",
-      "notes": "Postulación enviada vía LinkedIn",
-      "location": "Barcelona (Híbrido)",
+      "nextAction": "Wait for reply",
+      "notes": "Applied via LinkedIn",
+      "location": "Barcelona (Hybrid)",
       "url": "https://example.com/jobs/123",
       "priority": "high",
-      "description": "Descripción completa del puesto..."
+      "description": "Full job description..."
     },
     {
       "id": 2,
@@ -73,7 +73,7 @@ Los datos viven en `job-tracker-data.json` en la raíz del proyecto. El archivo 
       "interviewDate": "",
       "contact": "",
       "contactTitle": "",
-      "nextAction": "Revisar oferta",
+      "nextAction": "Review posting",
       "notes": "",
       "location": "Remote",
       "url": "https://example.com/jobs/456",
@@ -84,44 +84,44 @@ Los datos viven en `job-tracker-data.json` en la raíz del proyecto. El archivo 
 }
 ```
 
-### Campos por job
+### Job fields
 
-| Campo | Tipo | Notas |
+| Field | Type | Notes |
 |---|---|---|
-| `id` | number | Único. Para entradas manuales podés usar `Date.now()` o cualquier número entero. |
-| `company` | string | **Obligatorio.** Nombre de la empresa. |
-| `role` | string | **Obligatorio.** Título del puesto. |
-| `status` | string | Uno de: `Planned`, `Applied`, `Screening`, `Interview`, `Offer`, `Rejected`, `Withdrawn`. |
-| `date` | string | Fecha de postulación, formato `YYYY-MM-DD`. |
-| `interviewDate` | string | Fecha de entrevista, formato `YYYY-MM-DD` o vacío. |
-| `contact` | string | Nombre del recruiter / contacto. |
-| `contactTitle` | string | Cargo del contacto (opcional). |
-| `nextAction` | string | Próxima acción a tomar. |
-| `notes` | string | Notas libres. |
-| `location` | string | Ubicación / modalidad. |
-| `url` | string | URL del aviso. Importante: se usa para deduplicar al importar. |
-| `priority` | string | `high`, `medium` o `low`. |
-| `description` | string | Descripción completa del puesto (acepta saltos de línea). |
+| `id` | number | Unique. For manual entries you can use `Date.now()` or any integer. |
+| `company` | string | **Required.** Company name. |
+| `role` | string | **Required.** Job title. |
+| `status` | string | One of: `Planned`, `Applied`, `Screening`, `Interview`, `Offer`, `Rejected`, `Withdrawn`. |
+| `date` | string | Application date, `YYYY-MM-DD` format. |
+| `interviewDate` | string | Interview date, `YYYY-MM-DD` or empty. |
+| `contact` | string | Recruiter / contact name. |
+| `contactTitle` | string | Contact's job title (optional). |
+| `nextAction` | string | Next thing to do. |
+| `notes` | string | Free-form notes. |
+| `location` | string | Location / work mode. |
+| `url` | string | Posting URL. Used for deduplication on import. |
+| `priority` | string | `high`, `medium`, or `low`. |
+| `description` | string | Full job description (multi-line allowed). |
 
 ## API
 
-| Método | Ruta | Body | Response |
+| Method | Path | Body | Response |
 |---|---|---|---|
-| `GET` | `/` | — | Sirve `job-tracker.html` |
-| `GET` | `/api/jobs` | — | Array de jobs |
-| `PUT` | `/api/jobs` | Array de jobs | `{ ok: true, total: N }` |
+| `GET` | `/` | — | Serves `job-tracker.html` |
+| `GET` | `/api/jobs` | — | Array of jobs |
+| `PUT` | `/api/jobs` | Array of jobs | `{ ok: true, total: N }` |
 
-`PUT` reemplaza el array completo (no es per-job). Antes de cada escritura el server hace un backup automático en `backups/`.
+`PUT` replaces the entire array (it's not per-job). Before each write, the server creates an automatic backup in `backups/`.
 
-## Importar datos manualmente
+## Importing data manually
 
-### Opción 1: editar el JSON directamente
+### Option 1: edit the JSON directly
 
-Parar el server, editar `job-tracker-data.json`, volver a arrancar. La app va a leer los nuevos datos al refrescar el browser.
+Stop the server, edit `job-tracker-data.json`, restart. The app will pick up the new data on browser refresh.
 
-### Opción 2: vía API (recomendado para imports masivos)
+### Option 2: via API (recommended for batch imports)
 
-Si querés agregar una tanda de jobs sin pisar lo que ya tenés, usá un script Node como este:
+If you want to add a batch of jobs without overwriting what you already have, use a Node script like this:
 
 ```javascript
 // import.mjs
@@ -135,25 +135,25 @@ const NEW_JOBS = [
     interviewDate: "",
     contact: "",
     contactTitle: "",
-    nextAction: "Revisar oferta",
+    nextAction: "Review posting",
     notes: "",
     location: "Remote",
     url: "https://example.com/jobs/789",
     priority: "medium",
     description: ""
   }
-  // ... más jobs
+  // ... more jobs
 ];
 
 const API = 'http://localhost:8001/api/jobs';
 const current = await (await fetch(API)).json();
 
-// Deduplicar por URL
+// Deduplicate by URL
 const existingUrls = new Set(current.map(j => (j.url || '').trim()).filter(Boolean));
 const toAdd = NEW_JOBS.filter(j => !existingUrls.has((j.url || '').trim()));
 
 if (toAdd.length === 0) {
-  console.log('Nada nuevo que agregar.');
+  console.log('Nothing new to add.');
   process.exit(0);
 }
 
@@ -164,30 +164,30 @@ const r = await fetch(API, {
   body: JSON.stringify(merged)
 });
 
-console.log(`Agregados ${toAdd.length} jobs. Total: ${merged.length}`);
+console.log(`Added ${toAdd.length} jobs. Total: ${merged.length}`);
 console.log(await r.json());
 ```
 
-Correlo con `node import.mjs` mientras el server está corriendo. **Match por URL, no por ID** — los IDs pueden colisionar entre fuentes distintas.
+Run it with `node import.mjs` while the server is running. **Match by URL, not by ID** — IDs can collide between different sources.
 
-## Estructura del proyecto
+## Project structure
 
 ```
 job_tracker/
-├── server.js                  # Express server, puerto 8001
-├── job-tracker.html           # SPA en React (CDN, sin build)
-├── job-tracker-data.json      # Base de datos
+├── server.js                  # Express server, port 8001
+├── job-tracker.html           # React SPA (CDN, no build)
+├── job-tracker-data.json      # Database
 ├── package.json
-├── backups/                   # Generado automáticamente (gitignored)
+├── backups/                   # Auto-generated (gitignored)
 └── node_modules/              # npm install (gitignored)
 ```
 
 ## Backups
 
-Cada vez que se hace un `PUT /api/jobs`, el server copia el JSON actual a `backups/job-tracker-data.<ISO timestamp>.json` antes de sobreescribir. Si algo se rompe, podés restaurar uno de esos archivos copiándolo encima de `job-tracker-data.json`.
+Every time `PUT /api/jobs` is called, the server copies the current JSON to `backups/job-tracker-data.<ISO timestamp>.json` before overwriting. If something breaks, you can restore one of those files by copying it over `job-tracker-data.json`.
 
-La carpeta `backups/` está en `.gitignore`, no se versiona.
+The `backups/` folder is in `.gitignore` and not versioned.
 
-## Licencia
+## License
 
 Personal use.
