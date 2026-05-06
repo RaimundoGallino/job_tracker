@@ -115,60 +115,7 @@ Data lives in `job-tracker-data.json` at the project root. The file has this sha
 
 ## Importing data manually
 
-### Option 1: edit the JSON directly
-
 Stop the server, edit `job-tracker-data.json`, restart. The app will pick up the new data on browser refresh.
-
-### Option 2: via API (recommended for batch imports)
-
-If you want to add a batch of jobs without overwriting what you already have, use a Node script like this:
-
-```javascript
-// import.mjs
-const NEW_JOBS = [
-  {
-    id: Date.now(),
-    company: "Studio X",
-    role: "Technical Artist",
-    status: "Planned",
-    date: "2026-05-06",
-    interviewDate: "",
-    contact: "",
-    contactTitle: "",
-    nextAction: "Review posting",
-    notes: "",
-    location: "Remote",
-    url: "https://example.com/jobs/789",
-    priority: "medium",
-    description: ""
-  }
-  // ... more jobs
-];
-
-const API = 'http://localhost:8001/api/jobs';
-const current = await (await fetch(API)).json();
-
-// Deduplicate by URL
-const existingUrls = new Set(current.map(j => (j.url || '').trim()).filter(Boolean));
-const toAdd = NEW_JOBS.filter(j => !existingUrls.has((j.url || '').trim()));
-
-if (toAdd.length === 0) {
-  console.log('Nothing new to add.');
-  process.exit(0);
-}
-
-const merged = [...toAdd, ...current];
-const r = await fetch(API, {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(merged)
-});
-
-console.log(`Added ${toAdd.length} jobs. Total: ${merged.length}`);
-console.log(await r.json());
-```
-
-Run it with `node import.mjs` while the server is running. **Match by URL, not by ID** — IDs can collide between different sources.
 
 ## Project structure
 
